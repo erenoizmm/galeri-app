@@ -1,24 +1,28 @@
-name: galeri_app
-description: Neon Galeri - Gelişmiş Medya Uygulaması
-
-publish_to: 'none'
-version: 2.0.0+1
-
-environment:
-  sdk: '>=3.0.0 <4.0.0'
-
-dependencies:
-  flutter:
-    sdk: flutter
-  image_picker: ^1.0.7
-  path_provider: ^2.1.2
-  path: ^1.9.0
-  shared_preferences: ^2.2.2
-  video_player: ^2.8.3
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-
-flutter:
-  uses-material-design: true
+workflows:
+  android-workflow:
+    name: Neon Galeri Android Build
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      java: 17
+    scripts:
+      - name: Proje oluştur
+        script: |
+          flutter create -t app tempproject
+          cp pubspec.yaml tempproject/pubspec.yaml
+          cp -r lib tempproject/
+          cd tempproject
+          flutter pub get
+      - name: APK oluştur
+        script: |
+          cd tempproject
+          flutter build apk --release
+    artifacts:
+      - tempproject/build/app/outputs/flutter-apk/app-release.apk
+    publishing:
+      email:
+        recipients:
+          - your@email.com
+        notify:
+          success: true
+          failure: true
