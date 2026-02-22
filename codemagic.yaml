@@ -11,8 +11,19 @@ workflows:
           flutter create -t app tempproject
           cp -r lib tempproject/
           cd tempproject
-          sed -i 's/sdk: .*/sdk: "^3.11.0"/' pubspec.yaml
-          sed -i '/^dependencies:/a\  image_picker: ^1.0.7\n  path_provider: ^2.1.2\n  path: ^1.9.0\n  shared_preferences: ^2.2.2\n  video_player: ^2.8.3' pubspec.yaml
+          python3 -c "
+content = open('pubspec.yaml').read()
+content = content.replace('sdk: \'>=3.5.0 <4.0.0\'', 'sdk: \'^3.11.0\'')
+content = content.replace('sdk: \'>=3.0.0 <4.0.0\'', 'sdk: \'^3.11.0\'')
+deps = '''  image_picker: ^1.0.7
+  path_provider: ^2.1.2
+  path: ^1.9.0
+  shared_preferences: ^2.2.2
+'''
+content = content.replace('  flutter:\n    sdk: flutter\n', '  flutter:\n    sdk: flutter\n' + deps)
+open('pubspec.yaml', 'w').write(content)
+print(open('pubspec.yaml').read())
+"
           flutter pub get
           flutter build apk --release
     artifacts:
