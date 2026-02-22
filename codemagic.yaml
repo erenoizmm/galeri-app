@@ -1,21 +1,19 @@
 workflows:
   android-workflow:
-    name: Android Build
+    name: Neon Galeri Android Build
     max_build_duration: 60
     environment:
       flutter: stable
       java: 17
     scripts:
-      - name: Proje oluştur
+      - name: Proje oluştur ve APK al
         script: |
           flutter create -t app tempproject
-          cp pubspec.yaml tempproject/pubspec.yaml
           cp -r lib tempproject/
           cd tempproject
+          sed -i 's/sdk: .*/sdk: "^3.11.0"/' pubspec.yaml
+          sed -i '/^dependencies:/a\  image_picker: ^1.0.7\n  path_provider: ^2.1.2\n  path: ^1.9.0\n  shared_preferences: ^2.2.2\n  video_player: ^2.8.3' pubspec.yaml
           flutter pub get
-      - name: APK oluştur
-        script: |
-          cd tempproject
           flutter build apk --release
     artifacts:
       - tempproject/build/app/outputs/flutter-apk/app-release.apk
