@@ -6,16 +6,13 @@ workflows:
       flutter: stable
       java: 17
     scripts:
-      - name: Proje oluştur
+      - name: Proje oluştur ve APK al
         script: |
           flutter create -t app tempproject
           cp pubspec.yaml tempproject/pubspec.yaml
           cp -r lib tempproject/
           cd tempproject
-          flutter pub get
-      - name: APK oluştur
-        script: |
-          cd tempproject
+          flutter pub get --no-example
           flutter build apk --release
     artifacts:
       - tempproject/build/app/outputs/flutter-apk/app-release.apk
