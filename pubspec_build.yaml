@@ -1,0 +1,18 @@
+name: galeri_app
+description: Neon Galeri
+publish_to: none
+version: 2.0.0+1
+environment:
+  sdk: "^3.11.0"
+dependencies:
+  flutter:
+    sdk: flutter
+  image_picker: ^1.0.7
+  path_provider: ^2.1.2
+  path: ^1.9.0
+  shared_preferences: ^2.2.2
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+flutter:
+  uses-material-design: true
