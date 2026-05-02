@@ -1,18 +1,86 @@
 workflows:
   android-release:
-    name: Neon Galeri Android Build
+    name: Neon Galeri — Android Release
     max_build_duration: 60
+    instance_type: mac_mini_m2
+
     environment:
       flutter: 3.22.0
+      java: 17
       android_signing:
         - keystore_reference
+      vars:
+        PACKAGE_NAME: "com.example.neongaleri"   # ← kendi paket adınla değiştir
+
+    cache:
+      cache_paths:
+        - $FLUTTER_ROOT/.pub-cache
+        - $HOME/.gradle/caches
+
+    triggering:
+      events:
+        - push
+        - tag
+      branch_patterns:
+        - pattern: main
+          include: true
+        - pattern: release/*
+          include: true
+      tag_patterns:
+        - pattern: "v*"
+          include: true
+
     scripts:
-      - name: Proje oluştur ve APK al
+      - name: Flutter sürümünü doğrula
         script: |
-          flutter pub get
-          flutter build apk --release --no-tree-shake-icons
+          flutter --version
+          dart --version
+
+      - name: Bağımlılıkları yükle
+        script: flutter pub get
+
+      - name: Kod analizi (lint)
+        script: flutter analyze --no-fatal-infos
+
+      - name: Testleri çalıştır
+        script: flutter test --coverage || true
+
+      - name: Build numarasını ayarla
+        script: |
+          BUILD_NUMBER=$(($(date +%s) / 60))
+          echo "Build numarası: $BUILD_NUMBER"
+          # pubspec.yaml'daki version satırını güncelle
+          sed -i "s/^version: \(.*\)+.*/version: \1+$BUILD_NUMBER/" pubspec.yaml
+
+      - name: APK (Release) derle
+        script: |
+          flutter build apk \
+            --release \
+            --no-tree-shake-icons \
+            --obfuscate \
+            --split-debug-info=build/debug-info \
+            --split-per-abi
+
+      - name: App Bundle (AAB) derle
+        script: |
+          flutter build appbundle \
+            --release \
+            --no-tree-shake-icons \
+            --obfuscate \
+            --split-debug-info=build/debug-info
+
     artifacts:
+      # Mimariye göre ayrı APK'lar (daha küçük boyut)
+      - build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+      - build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+      - build/app/outputs/flutter-apk/app-x86_64-release.apk
+      # Evrensel APK (gerekirse)
       - build/app/outputs/flutter-apk/app-release.apk
+      # Play Store için AAB
+      - build/app/outputs/bundle/release/app-release.aab
+      # Obfuscation debug sembolleri
+      - build/debug-info
+
     publishing:
       email:
         recipients:
