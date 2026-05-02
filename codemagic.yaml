@@ -1,25 +1,22 @@
 workflows:
-  android-workflow:
+  android-release:
     name: Neon Galeri Android Build
     max_build_duration: 60
     environment:
-      flutter: stable
-      java: 17
+      flutter: 3.22.0
+      android_signing:
+        - keystore_reference
     scripts:
       - name: Proje oluştur ve APK al
-        script: >-
-          flutter create -t app tempproject &&
-          cp -r lib tempproject/ &&
-          cp pubspec_build.yaml tempproject/pubspec.yaml &&
-          cd tempproject &&
-          flutter pub get &&
-          flutter build apk --release
+        script: |
+          flutter pub get
+          flutter build apk --release --no-tree-shake-icons
     artifacts:
-      - tempproject/build/app/outputs/flutter-apk/app-release.apk
+      - build/app/outputs/flutter-apk/app-release.apk
     publishing:
       email:
         recipients:
-          - your@email.com
+          - erenoizm@gmail.com
         notify:
           success: true
           failure: true
